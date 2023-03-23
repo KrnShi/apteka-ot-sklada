@@ -13,9 +13,9 @@ class AptekaotskladaSpider(scrapy.Spider):
     name = "AptekaOtSklada"
     allowed_domains = ["apteka-ot-sklada.ru"]
     start_urls = [
-        # "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/uhod-za-polostyu-rta/zubnye-niti_-ershiki",
-        # "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/vlazhnye-salfetki/vlazhnye-salfetki-dlya-detey",
-        # "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/mylo/mylo-zhidkoe",
+        "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/uhod-za-polostyu-rta/zubnye-niti_-ershiki",
+        "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/vlazhnye-salfetki/vlazhnye-salfetki-dlya-detey",
+        "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/mylo/mylo-zhidkoe",
         "https://apteka-ot-sklada.ru/catalog/medikamenty-i-bady/vitaminy-i-mikroelementy/vitaminy-drugie",
     ]
     city_cookies = {"city": 92}
