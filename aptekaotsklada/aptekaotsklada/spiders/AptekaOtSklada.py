@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 from datetime import datetime
 
 import scrapy
@@ -12,9 +13,9 @@ class AptekaotskladaSpider(scrapy.Spider):
     name = "AptekaOtSklada"
     allowed_domains = ["apteka-ot-sklada.ru"]
     start_urls = [
-        "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/uhod-za-polostyu-rta/zubnye-niti_-ershiki",
-        "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/vlazhnye-salfetki/vlazhnye-salfetki-dlya-detey",
-        "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/mylo/mylo-zhidkoe",
+        # "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/uhod-za-polostyu-rta/zubnye-niti_-ershiki",
+        # "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/vlazhnye-salfetki/vlazhnye-salfetki-dlya-detey",
+        # "https://apteka-ot-sklada.ru/catalog/sredstva-gigieny/mylo/mylo-zhidkoe",
         "https://apteka-ot-sklada.ru/catalog/medikamenty-i-bady/vitaminy-i-mikroelementy/vitaminy-drugie",
     ]
     city_cookies = {"city": 92}
@@ -60,22 +61,28 @@ class AptekaotskladaSpider(scrapy.Spider):
 
     def get_metadata(self, response):
         description = response.json()["description"]
+        metadata = defaultdict(str)
+        metadata["__description"] = ""
+        metadata["АРТИКУЛ"] = response.json()["id"]
+        metadata["СТРАНА ПРОИЗВОДИТЕЛЬ"] = response.json()["country"]
         if description:
-            soup = BeautifulSoup(description, features="html.parser")
-            text_description = soup.get_text()
-            text_description = self.normal_form(text_description)
-        else:
-            text_description = None
-        result = {}
-        result["__description"] = text_description or ""
-        result["АРТИКУЛ"] = response.json()["id"]
-        result["СТРАНА ПРОИЗВОДИТЕЛЬ"] = response.json()["country"]
+            description_soup = BeautifulSoup(description, features="html.parser")
+            re_keys = re.compile(
+                "противопоказания|состав|оболочка|область|показания|описание|форма|характеристика|дозировка|предосторожности")
+            key = None
+            for desc in description_soup:
+                desc = self.normal_form(str(desc).lower())
+                if re_keys.search(desc):
+                    key = desc
+                elif key:
+                    metadata[key] += desc
+                metadata['__description'] += f' {desc}'
 
-        return result
+        return metadata
 
     def normal_form(self, data):
         if data:
-            data = re.sub('[\n\r\t \" ­]', '', data).strip()
+            data = re.sub('[<p>:</p><h2></h2>\n\r\t \" ­strong]', '', data).strip()
             data = re.sub('[ ]{2,}', ' ', data)
         return data
 
